@@ -16,7 +16,7 @@ const Projects = () => {
       technologies: ['Python', 'Pandas', 'Scikit-learn', 'Streamlit'],
       period: 'Feb 2025 - Mar 2025',
       github: 'https://github.com/amal-iyka/Movie-recommendation-app',
-      demo: 'https://github.com/amal-iyka/Movie-recommendation-app',
+      demo: 'https://movie-recommendation-app-4jyaqy8am6tufoea2i5wld.streamlit.app/',
       features: [
         'Cosine similarity algorithm',
         'Interactive Streamlit UI',

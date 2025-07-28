@@ -1,310 +1,219 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
-import { 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Send, 
-  Github, 
-  Linkedin,
-  Download
-} from 'lucide-react';
-import emailjs from 'emailjs-com';
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { Mail, Phone, MapPin, Send, Github, Linkedin, Twitter } from 'lucide-react';
+import emailjs from '@emailjs/browser';
 
 const Contact = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     subject: '',
     message: ''
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
+
+  // EmailJS configuration
+  const EMAILJS_SERVICE_ID = 'service_msye7zy';
+  const EMAILJS_TEMPLATE_ID = 'template_luon57l';
+  const EMAILJS_AUTOREPLY_TEMPLATE_ID = 'template_3a46l9w';
+  const EMAILJS_PUBLIC_KEY = 'O1-U9o4tdRPuCBtQ5';
 
   const contactInfo = [
     {
       icon: Mail,
-      label: 'Email',
-      value: 'sheemakaunainsh@gmail.com',
-      href: 'mailto:sheemakaunainsh@gmail.com'
+      title: "Email",
+      value: "sheemakaunainsh@gmail.com",
+      href: "mailto:sheemakaunainsh@gmail.com"
     },
     {
       icon: Phone,
-      label: 'Phone',
-      value: '+91 9342731307',
-      href: 'tel:+919342731307'
+      title: "Phone",
+      value: "+91 9342731307",
+      href: "tel:+919342731307"
     },
     {
       icon: MapPin,
-      label: 'Location',
-      value: 'Tirupattur, Tamil Nadu, India',
-      href: null
+      title: "Location",
+      value: "Tirupattur, Tamil Nadu, India",
+      href: "#"
     }
   ];
 
   const socialLinks = [
-    {
-      icon: Github,
-      label: 'GitHub',
-      href: 'https://github.com/amal-iyka',
-      username: '@amal-iyka'
-    },
-    {
-      icon: Linkedin,
-      label: 'LinkedIn',
-      href: 'https://www.linkedin.com/in/sheema-kaunain/',
-      username: '@sheema-kaunain'
-    }
+    { icon: Github, href: "https://github.com/amal-iyka", label: "GitHub" },
+    { icon: Linkedin, href: "https://www.linkedin.com/in/sheema-kaunain/", label: "LinkedIn" },
+    { icon: Twitter, href: "https://twitter.com/sheema", label: "Twitter" },
   ];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-
+    
     try {
-      // Send main email
-      await emailjs.send(
-        'service_msye7zy',
-        'template_luon57l',
+      // Send email using EmailJS
+      const result = await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
         {
-          from_name: formData.name,
+          from_name: `${formData.firstName} ${formData.lastName}`,
           from_email: formData.email,
           subject: formData.subject,
           message: formData.message,
-          to_name: 'Sheema Kaunain',
+          to_name: 'Sheema',
           to_email: 'sheemakaunainsh@gmail.com'
         },
-        'O1-U9o4tdRPuCBtQ5'
+        EMAILJS_PUBLIC_KEY
       );
 
-      // Send auto-reply
-      await emailjs.send(
-        'service_msye7zy',
-        'template_3a46l9w',
-        {
-          to_name: formData.name,
-          to_email: formData.email,
-          subject: formData.subject,
-          reply_message: `Thank you for contacting me! I have received your message: "${formData.message}" and will get back to you soon.`
-        },
-        'O1-U9o4tdRPuCBtQ5'
-      );
+      if (result.status === 200) {
+        // Send auto-reply email to the sender
+        try {
+          await emailjs.send(
+            EMAILJS_SERVICE_ID,
+            EMAILJS_AUTOREPLY_TEMPLATE_ID,
+            {
+              to_name: `${formData.firstName} ${formData.lastName}`,
+              to_email: formData.email,
+              from_name: 'Sheema'
+            },
+            EMAILJS_PUBLIC_KEY
+          );
+        } catch (autoReplyError) {
+          console.error('Auto-reply failed:', autoReplyError);
+          // Don't show error to user as main email was successful
+        }
 
-      toast({
-        title: 'Message sent successfully!',
-        description: 'Thank you for reaching out. I\'ll get back to you soon.',
-      });
-
-      setFormData({ name: '', email: '', subject: '', message: '' });
+        toast({
+          title: "Message sent successfully!",
+          description: "Thank you for reaching out. I'll get back to you soon.",
+        });
+        
+        // Reset form
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          subject: '',
+          message: ''
+        });
+      }
     } catch (error) {
+      console.error('Email sending failed:', error);
       toast({
-        title: 'Failed to send message',
-        description: 'Please try again or contact me directly via email.',
-        variant: 'destructive',
+        title: "Failed to send message",
+        description: "Please try again or contact me directly via email.",
+        variant: "destructive"
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDownloadResume = () => {
-    window.open('https://drive.google.com/file/d/1Yj0LIUEDZj7AWCw_utTxiJxPfaFXtyt6/view?usp=drive_link', '_blank');
-  };
-
   return (
     <section id="contact" className="py-20 relative">
       <div className="container mx-auto px-6">
+        {/* Section Header */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Get In <span className="gradient-text">Touch</span>
+          <Badge variant="outline" className="mb-4 px-6 py-2">Get In Touch</Badge>
+          <h2 className="text-3xl lg:text-4xl font-bold mb-6">
+            Let's{' '}
+            <span className="bg-gradient-primary bg-clip-text text-transparent">Connect</span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Ready to collaborate on innovative projects or discuss opportunities? 
-            I'd love to hear from you. Let's create something amazing together!
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            I'm always interested in hearing about new opportunities and exciting projects. 
+            Whether you have a question or just want to say hi, I'd love to hear from you!
           </p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12">
-          {/* Contact Information */}
-          <div className="space-y-8">
-            <div>
-              <h3 className="text-2xl font-bold mb-6">Let's Connect</h3>
-              <p className="text-muted-foreground mb-8">
-                Whether you have a project in mind, want to discuss collaboration opportunities, 
-                or just want to say hello, I'm always excited to connect with fellow developers 
-                and innovators.
-              </p>
-            </div>
-
-            {/* Contact Details */}
-            <div className="space-y-4">
-              {contactInfo.map((contact, index) => (
-                <Card key={index} className="glass hover-lift">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-4">
-                      <div className="p-3 rounded-lg bg-primary/20">
-                        <contact.icon className="h-5 w-5 text-primary" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-sm text-muted-foreground">
-                          {contact.label}
-                        </h4>
-                        {contact.href ? (
-                          <a 
-                            href={contact.href}
-                            className="text-foreground hover:text-primary transition-colors"
-                          >
-                            {contact.value}
-                          </a>
-                        ) : (
-                          <span className="text-foreground">{contact.value}</span>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {/* Social Links */}
-            <div>
-              <h4 className="text-lg font-semibold mb-4">Follow Me</h4>
-              <div className="space-y-3">
-                {socialLinks.map((social, index) => (
-                  <Card key={index} className="glass hover-lift">
-                    <CardContent className="p-4">
-                      <a 
-                        href={social.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-4 group"
-                      >
-                        <div className="p-2 rounded-lg bg-primary/20 group-hover:bg-primary/30 transition-colors">
-                          <social.icon className="h-5 w-5 text-primary" />
-                        </div>
-                        <div>
-                          <h5 className="font-semibold">{social.label}</h5>
-                          <p className="text-sm text-muted-foreground">{social.username}</p>
-                        </div>
-                      </a>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-
-            {/* Resume Download */}
-            <Card className="glass hover-lift">
-              <CardContent className="p-6 text-center">
-                <h4 className="text-lg font-semibold mb-3">Download My Resume</h4>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Get a detailed overview of my experience and qualifications
-                </p>
-                <Button 
-                  onClick={handleDownloadResume}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground w-full"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Download Resume
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-
           {/* Contact Form */}
-          <Card className="glass hover-lift">
+          <Card className="glass-card hover:shadow-glow-secondary transition-all duration-300 animate-fade-in">
             <CardContent className="p-8">
-              <h3 className="text-2xl font-bold mb-6">Send Me a Message</h3>
+              <h3 className="text-2xl font-semibold mb-6">Send a Message</h3>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium mb-2">
-                      Your Name
-                    </label>
-                    <Input
-                      id="name"
-                      name="name"
-                      type="text"
-                      value={formData.name}
+                    <label className="text-sm font-medium mb-2 block">First Name</label>
+                    <Input 
+                      name="firstName"
+                      value={formData.firstName}
                       onChange={handleInputChange}
-                      placeholder="John Doe"
-                      required
-                      className="bg-background/50"
+                      placeholder="Your First Name" 
+                      required 
                     />
                   </div>
                   <div>
-                    <label htmlFor="email" className="block text-sm font-medium mb-2">
-                      Email Address
-                    </label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
+                    <label className="text-sm font-medium mb-2 block">Last Name</label>
+                    <Input 
+                      name="lastName"
+                      value={formData.lastName}
                       onChange={handleInputChange}
-                      placeholder="john@example.com"
-                      required
-                      className="bg-background/50"
+                      placeholder="Your Last Name" 
+                      required 
                     />
                   </div>
                 </div>
                 
                 <div>
-                  <label htmlFor="subject" className="block text-sm font-medium mb-2">
-                    Subject
-                  </label>
-                  <Input
-                    id="subject"
-                    name="subject"
-                    type="text"
-                    value={formData.subject}
+                  <label className="text-sm font-medium mb-2 block">Email</label>
+                  <Input 
+                    name="email"
+                    type="email"
+                    value={formData.email}
                     onChange={handleInputChange}
-                    placeholder="Let's work together!"
-                    required
-                    className="bg-background/50"
+                    placeholder="your@email.com" 
+                    required 
                   />
                 </div>
                 
                 <div>
-                  <label htmlFor="message" className="block text-sm font-medium mb-2">
-                    Message
-                  </label>
-                  <Textarea
-                    id="message"
-                    name="message"
-                    value={formData.message}
+                  <label className="text-sm font-medium mb-2 block">Subject</label>
+                  <Input 
+                    name="subject"
+                    value={formData.subject}
                     onChange={handleInputChange}
-                    placeholder="Tell me about your project or just say hello!"
-                    rows={6}
-                    required
-                    className="bg-background/50 resize-none"
+                    placeholder="What's this about?" 
+                    required 
                   />
                 </div>
                 
-                <Button
-                  type="submit"
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Message</label>
+                  <Textarea 
+                    name="message"
+                    value={formData.message}
+                    onChange={handleInputChange}
+                    placeholder="Your message here..." 
+                    rows={5} 
+                    required 
+                  />
+                </div>
+                
+                <Button 
+                  type="submit" 
+                  className="w-full bg-gradient-primary hover:shadow-glow-primary transition-all duration-300"
                   disabled={isSubmitting}
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-6 text-lg glow"
                 >
                   {isSubmitting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-foreground mr-2"></div>
-                      Sending...
-                    </>
+                    "Sending..."
                   ) : (
                     <>
-                      <Send className="h-5 w-5 mr-2" />
+                      <Send className="w-4 h-4 mr-2" />
                       Send Message
                     </>
                   )}
@@ -312,6 +221,67 @@ const Contact = () => {
               </form>
             </CardContent>
           </Card>
+
+          {/* Contact Information */}
+          <div className="space-y-8 animate-slide-in-right">
+            <Card className="glass-card hover:shadow-glow-secondary transition-all duration-300">
+              <CardContent className="p-8">
+                <h3 className="text-2xl font-semibold mb-6">Contact Information</h3>
+                <div className="space-y-6">
+                  {contactInfo.map((info, index) => (
+                    <a
+                      key={index}
+                      href={info.href}
+                      className="flex items-center space-x-4 p-4 rounded-lg hover:bg-secondary/50 transition-colors group"
+                    >
+                      <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <info.icon className="w-6 h-6 text-primary-foreground" />
+                      </div>
+                      <div>
+                        <p className="font-medium group-hover:text-primary transition-colors">
+                          {info.title}
+                        </p>
+                        <p className="text-muted-foreground">{info.value}</p>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Social Links */}
+            <Card className="glass-card hover:shadow-glow-secondary transition-all duration-300">
+              <CardContent className="p-8">
+                <h3 className="text-xl font-semibold mb-6">Follow Me</h3>
+                <div className="flex space-x-4">
+                  {socialLinks.map((social, index) => (
+                    <a
+                      key={index}
+                      href={social.href}
+                      className="w-12 h-12 bg-secondary rounded-lg flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all duration-300 hover:scale-110"
+                      aria-label={social.label}
+                    >
+                      <social.icon className="w-5 h-5" />
+                    </a>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Availability */}
+            <Card className="glass-card hover:shadow-glow-secondary transition-all duration-300">
+              <CardContent className="p-8">
+                <h3 className="text-xl font-semibold mb-4">Availability</h3>
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm text-muted-foreground">Available for new projects</span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  I typically respond to emails within 24 hours. Looking forward to hearing from you!
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </section>
