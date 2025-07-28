@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { ArrowDown, Download, MessageCircle } from 'lucide-react';
-import profileImage from '@/assets/profile-image.jpg';
+import profileImage from '/lovable-uploads/8691cb76-87f3-4e46-bed9-6906ed18c09c.png';
 
 const Hero = () => {
   const handleDownloadResume = () => {

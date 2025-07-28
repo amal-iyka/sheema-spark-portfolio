@@ -7,7 +7,7 @@ const About = () => {
       icon: Code,
       title: 'Frontend Development',
       description: 'Creating responsive and interactive web interfaces using HTML, CSS, JavaScript, TypeScript, and React.js',
-      stats: '10+ Projects'
+      stats: '15+ Projects'
     },
     {
       icon: Database,
@@ -32,7 +32,7 @@ const About = () => {
   const achievements = [
     { number: '8.95', label: 'CGPA' },
     { number: '6+', label: 'Months Experience' },
-    { number: '3+', label: 'Major Projects' },
+    { number: '15+', label: 'Projects' },
     { number: '100%', label: 'Commitment' }
   ];
 

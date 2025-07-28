@@ -2,9 +2,9 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ExternalLink, Github, Calendar } from 'lucide-react';
-import movieProject from '@/assets/movie-project.jpg';
-import churnProject from '@/assets/churn-project.jpg';
-import airlineProject from '@/assets/airline-project.jpg';
+import movieProject from '/lovable-uploads/7d31210f-1af0-475c-ad05-150fcf23aee5.png';
+import churnProject from '/lovable-uploads/2557668a-a4d5-412d-a058-3d6dce1f84b0.png';
+import airlineProject from '/lovable-uploads/74077438-4cd8-4be9-b488-502aaec4457d.png';
 
 const Projects = () => {
   const projects = [

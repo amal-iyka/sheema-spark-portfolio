@@ -82,6 +82,7 @@ const Contact = () => {
           from_email: formData.email,
           subject: formData.subject,
           message: formData.message,
+          to_name: 'Sheema Kaunain',
           to_email: 'sheemakaunainsh@gmail.com'
         },
         'O1-U9o4tdRPuCBtQ5'
@@ -94,7 +95,8 @@ const Contact = () => {
         {
           to_name: formData.name,
           to_email: formData.email,
-          subject: formData.subject
+          subject: formData.subject,
+          reply_message: `Thank you for contacting me! I have received your message: "${formData.message}" and will get back to you soon.`
         },
         'O1-U9o4tdRPuCBtQ5'
       );
